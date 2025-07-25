@@ -1,0 +1,28 @@
+[project]
+name = "docker-tool"  # Nom unique sur PyPI !
+version = "1.0.0"
+description = "🛠️ Simple and interactive CLI for Docker container management"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+  {name = "JuleZ", email = "julestblt.dev@pm.me"},
+]
+dependencies = [
+   "typer>=0.9.0",
+   "rich>=13.7.0",
+   "questionary>=2.0.1",
+   "prompt-toolkit>=3.0.43",
+   "docker>=7.0.0"
+]
+
+[project.scripts]
+dtool = "docker_tool.cli:app"
+
+[project.urls]
+"Homepage" = "https://github.com/Julestblt/docker-wrapper"
+"Repository" = "https://github.com/Julestblt/docker-wrapper"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+

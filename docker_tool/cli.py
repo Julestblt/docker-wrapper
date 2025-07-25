@@ -3,8 +3,8 @@ import typer
 from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
-from lib.docker_client import DockerClient
-from lib.version import __version__
+from .docker_client import DockerClient
+from .version import __version__
 
 app = typer.Typer(
     name="dtool",
