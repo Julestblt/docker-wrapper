@@ -146,7 +146,7 @@ class DockerClient:
 
         console.print(table)
         
-    def spawn_shell(self, container_id: str):
+    def spawn_shell(self, container_id: str, shell: str):
         try:
             client = docker.from_env()
             container = client.containers.get(container_id)
@@ -168,7 +168,7 @@ class DockerClient:
             cmd = [
                 "docker", "exec", "-it", 
                 container_id, 
-                "/bin/sh"
+                shell
             ]
             
             os.execvp("docker", cmd)

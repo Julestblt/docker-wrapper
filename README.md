@@ -103,14 +103,11 @@ The tool intelligently searches for containers:
 dtool shell backend
 
 # Check logs of multiple services
-dtool logs frontend --tail 20
-dtool logs backend --tail 20
+dtool logs frontend
+dtool logs backend
 
 # Restart a service
 dtool restart nginx
-
-# Interactive management
-dtool wizard
 ```
 
 ### Advanced Usage
@@ -122,21 +119,21 @@ dtool shell alpine --shell /bin/sh
 # Force stop container
 dtool stop stubborn-container --force
 
-# Follow logs with custom tail
-dtool logs app --tail 200 --follow
+# Follow logs
+dtool logs app -f
 ```
 
 ## Project Structure
 
-```
-docker-tool/
-├── docker_tool.py       # Main entry point
+```bash
+docker-wrapper/
 ├── requirements.txt     # Python dependencies
-├── README.md           # This file
-└── lib/
+└── docker_tool/
     ├── __init__.py
+    ├── cli.py           # Main CLI entry point
     ├── docker_client.py # Docker command wrapper
-    └── version.py       # Version information
+    ├── version.py       # Version information
+    └── utils.py         # Utility functions
 ```
 
 ## Why Docker Tool?
