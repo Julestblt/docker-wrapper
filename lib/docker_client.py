@@ -5,6 +5,7 @@ from typing import List, Dict
 from docker.errors import DockerException
 from rich.console import Console
 from rich.table import Table
+import os
 
 console = Console()
 
@@ -88,3 +89,46 @@ class DockerClient:
             )
 
         console.print(table)
+        
+    def spawn_shell(self, container_id: str):
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+            if container.status != 'running':
+                raise DockerException(f"Container {container_id} is not running.")
+            
+            console.print(f"\n[bold green]Entering shell in container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]\n")
+            
+            cmd = [
+                "docker", "exec", "-it", 
+                container_id, 
+                "/bin/sh"
+            ]
+            
+            os.execvp("docker", cmd)
+            
+        except DockerException as e:
+            if self.capture and e.stderr:
+                print(e.stderr, file=sys.stderr)
+            raise
+        
+    def exec_cmd(self, container_id: str, command: List[str]):
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+            if container.status != 'running':
+                raise DockerException(f"Container {container_id} is not running.")
+            
+            exec_instance = client.api.exec_create(
+                container_id, command, tty=True, stdin=True
+            )
+            output = client.api.exec_start(exec_instance['Id'], stream=True)
+            
+            for line in output:
+                print(line.decode('utf-8'), end='')
+                if self.capture:
+                    self.captured_output.append(line.decode('utf-8'))
+        except DockerException as e:
+            if self.capture and e.stderr:
+                print(e.stderr, file=sys.stderr)
+            raise

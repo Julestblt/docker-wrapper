@@ -92,6 +92,35 @@ def ps(
 
     docker.print_containers_rich(containers=containers)
 
+@app.command()
+def shell(
+    container_id: str = typer.Argument(..., help="Container ID to exec into")
+):
+    """
+    🐳 Spawn shell in a running container
+
+    Examples:
+        dtool shell e3f1d2
+    """
+
+    docker = check_docker_daemon()
+    docker.spawn_shell(container_id=container_id)
+
+@app.command()
+def exec(
+    container_id: str = typer.Argument(..., help="Container ID to exec into"),
+    command: list[str] = typer.Argument(..., help="Command to run inside the container")
+):
+    """
+    🐳 Execute a command in a running container
+
+    Examples:
+        dtool exec e3f1d2 id
+        dtool exec e3f1d2 cat /etc/hostname
+    """
+
+    docker = check_docker_daemon()
+    docker.exec_cmd(container_id=container_id, command=" ".join(command))
 
 if __name__ == "__main__":
     app()
