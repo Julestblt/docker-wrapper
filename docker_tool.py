@@ -130,5 +130,23 @@ def exec(
     docker = check_docker_daemon()
     docker.exec_cmd(container_id=container_id, command=" ".join(command))
 
+@app.command()
+def logs(
+    container_id: str = typer.Argument(..., help="Container ID or name to fetch logs for"),
+    follow: bool = typer.Option(
+        False, "--follow", "-f", help="Follow logs (tail -f style)"
+    ),
+):
+    """
+    📜 Fetch logs from a container
+
+    Examples:
+        dtool logs e3f1d2
+        dtool logs e3f1d2 --follow
+    """
+
+    docker = check_docker_daemon()
+    docker.fetch_logs(container_id=container_id, follow=follow)
+
 if __name__ == "__main__":
     app()

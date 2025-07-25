@@ -77,7 +77,6 @@ class DockerClient:
                         ports.append(container_port)
             ports_str = ", ".join(ports) if ports else ""
 
-            # Couleur du status
             status_color = "green" if status == "running" else "red"
 
             table.add_row(
@@ -123,11 +122,29 @@ class DockerClient:
                 container_id, command, tty=True, stdin=True
             )
             output = client.api.exec_start(exec_instance['Id'], stream=True)
-            
             for line in output:
                 print(line.decode('utf-8'), end='')
                 if self.capture:
                     self.captured_output.append(line.decode('utf-8'))
+        except DockerException as e:
+            if self.capture and e.stderr:
+                print(e.stderr, file=sys.stderr)
+            raise
+        
+    def fetch_logs(self, container_id: str, follow:bool = False):
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+            if container.status != 'running':
+                raise DockerException(f"Container {container_id} is not running.")
+            
+            if follow:
+                logs = container.logs(stream=True, follow=True)
+                for log in logs:
+                    print(log.decode('utf-8'), end='')
+            else:
+                logs = container.logs()
+                print(logs.decode('utf-8'), end='')
         except DockerException as e:
             if self.capture and e.stderr:
                 print(e.stderr, file=sys.stderr)
