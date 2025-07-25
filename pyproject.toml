@@ -1,6 +1,6 @@
 [project]
 name = "docker-tool"  # Nom unique sur PyPI !
-version = "1.0.0"
+version = "1.0.1"
 description = "🛠️ Simple and interactive CLI for Docker container management"
 readme = "README.md"
 license = {text = "MIT"}
