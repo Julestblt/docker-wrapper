@@ -12,6 +12,11 @@ app = typer.Typer(
     add_completion=True,
     rich_markup_mode="rich",
     epilog="Made with ❤️ for developers who hate long Docker commands",
+    context_settings={
+        "help_option_names": ["-h", "--help"],
+        "show_default": True,
+    },
+    invoke_without_command=True,
 )
 
 console = Console()
@@ -47,6 +52,7 @@ def version_callback(value: bool):
 
 @app.callback()
 def main(
+    ctx: typer.Context,
     version: Optional[bool] = typer.Option(
         None,
         "--version",
@@ -61,7 +67,9 @@ def main(
 
     Run 'dtool COMMAND --help' for more information on a command.
     """
-    pass
+    if ctx.invoked_subcommand is None:
+        console.print(ctx.get_help())
+        raise typer.Exit()
 
 
 @app.command()
