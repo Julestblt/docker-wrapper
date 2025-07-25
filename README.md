@@ -55,8 +55,8 @@ dtool shell backend
 dtool shell e5d  # Partial ID
 
 # Execute commands
-dtool exec nginx "ls -la"
-dtool exec backend "cat /etc/hosts"
+dtool exec nginx ls -la
+dtool exec backend cat /etc/hosts
 
 # View logs
 dtool logs nginx
