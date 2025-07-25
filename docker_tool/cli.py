@@ -102,7 +102,8 @@ def ps(
 
 @app.command()
 def shell(
-    container_id: str = typer.Argument(..., help="Container ID to exec into")
+    container_id: str = typer.Argument(..., help="Container ID to exec into"),
+    shell: str = typer.Argument("/bin/sh", help="Shell to use inside the container")
 ):
     """
     🐳 Spawn shell in a running container
@@ -112,7 +113,7 @@ def shell(
     """
 
     docker = check_docker_daemon()
-    docker.spawn_shell(container_id=container_id)
+    docker.spawn_shell(container_id=container_id, shell=shell)
 
 @app.command()
 def exec(
