@@ -147,6 +147,68 @@ def logs(
 
     docker = check_docker_daemon()
     docker.fetch_logs(container_id=container_id, follow=follow)
+    
+    
+@app.command()
+def start(
+    container_id: str = typer.Argument(..., help="Container ID or name to start")
+):
+    """
+    ▶️ Start a stopped container
+
+    Examples:
+        dtool start e3f1d2
+    """
+
+    docker = check_docker_daemon()
+    docker.start_container(container_id=container_id)
+    
+@app.command()
+def stop(
+    container_id: str = typer.Argument(..., help="Container ID or name to stop"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force stop the container")
+):
+    """
+    ⏹️ Stop a running container
+
+    Examples:
+        dtool stop e3f1d2
+    """
+
+    docker = check_docker_daemon()
+    docker.stop_container(container_id=container_id, force=force)
+    
+@app.command()
+def restart(
+    container_id: str = typer.Argument(..., help="Container ID or name to restart"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force restart the container")
+):
+    """
+    🔄 Restart a running container
+
+    Examples:
+        dtool restart e3f1d2
+    """
+
+    docker = check_docker_daemon()
+    docker.restart_container(container_id=container_id, force=force)
+    
+@app.command()
+def rm(
+    container_id: str = typer.Argument(..., help="Container ID or name to remove"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force remove the container")
+):
+    """
+    🗑️ Remove a stopped container
+
+    Examples:
+        dtool rm e3f1d2
+        dtool rm e3f1d2 --force
+    """
+
+    docker = check_docker_daemon()
+    docker.remove_container(container_id=container_id, force=force)
+    
 
 if __name__ == "__main__":
     app()

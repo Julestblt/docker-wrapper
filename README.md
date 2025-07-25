@@ -60,13 +60,14 @@ dtool exec backend cat /etc/hosts
 
 # View logs
 dtool logs nginx
-dtool logs backend --tail 50
-dtool logs app --no-follow
+dtool logs backend -f
 
 # Container lifecycle
 dtool stop nginx
 dtool start nginx
 dtool restart backend
+dtool rm nginx
+dtool rm backend -f
 ```
 
 ### Smart Container Search
