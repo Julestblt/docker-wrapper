@@ -19,14 +19,7 @@
 ### Install
 
 ```bash
-git clone <your-repo>
-cd docker-tool
-
-pip install -r requirements.txt
-
-chmod +x docker_tool.py
-
-sudo ln -s $(pwd)/docker_tool.py /usr/local/bin/dtool
+pip install docker-tool
 ```
 
 ## Usage
@@ -41,9 +34,6 @@ dtool ps
 
 # List all containers
 dtool ps -a
-
-# Interactive container selection
-dtool ps -i
 ```
 
 #### Container Management
@@ -102,6 +92,9 @@ The tool intelligently searches for containers:
 # Quick shell access
 dtool shell backend
 
+# Execute a command in a container
+dtool exec frontend id
+
 # Check logs of multiple services
 dtool logs frontend
 dtool logs backend
@@ -114,7 +107,7 @@ dtool restart nginx
 
 ```bash
 # Use specific shell
-dtool shell alpine --shell /bin/sh
+dtool shell alpine /bin/sh
 
 # Force stop container
 dtool stop stubborn-container --force
@@ -141,7 +134,6 @@ docker-wrapper/
 - **Shorter Commands**: `dtool shell nginx` vs `docker exec -it nginx /bin/bash`
 - **Smart Search**: No need to remember full container IDs or names
 - **Beautiful Output**: Rich formatting makes information easy to read
-- **Interactive Mode**: Perfect for when you're not sure what you want to do
 - **Error Handling**: Graceful fallbacks (e.g., sh when bash unavailable)
 
 ## Contributing
