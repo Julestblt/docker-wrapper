@@ -5,6 +5,8 @@ from rich.console import Console
 from rich.panel import Panel
 from .docker_client import DockerClient
 from .version import __version__
+from .wizard import DockerWizard
+
 
 app = typer.Typer(
     name="dtool",
@@ -78,27 +80,37 @@ def ps(
         None, help="Container name or ID to filter"),
     all: bool = typer.Option(False, "--all", "-a", help="Show all containers"),
     regex: bool = typer.Option(
-        False, "--regex", "-r", help="Use regex match")
+        False, "--regex", "-r", help="Use regex match"),
+    interactive: bool = typer.Option(
+        False, "--interactive", "-i", help="Interactive mode - select and manage containers")
 ):
     """
     📋 List containers
-
+    
     Examples:
         dtool ps
         dtool ps --all
+        dtool ps --interactive
         dtool ps my-container
         dtool ps e3f1d2
     """
-
     docker = check_docker_daemon()
-
+    
     if container:
         containers = docker.list_containers(
             all=all, filter=container, regex=regex)
     else:
         containers = docker.list_containers(all=all)
-
-    docker.print_containers_rich(containers=containers)
+    
+    if interactive:
+        if not containers:
+            console.print("[yellow]No containers found![/yellow]")
+            return
+            
+        wizard = DockerWizard(docker)
+        wizard.container_selection_wizard(containers)
+    else:
+        docker.print_containers_rich(containers=containers)
 
 @app.command()
 def shell(
@@ -118,18 +130,18 @@ def shell(
 @app.command()
 def exec(
     container_id: str = typer.Argument(..., help="Container ID to exec into"),
-    command: list[str] = typer.Argument(..., help="Command to run inside the container")
+    command: str = typer.Argument(..., help="Command to run inside the container")
 ):
     """
-    🐳 Execute a command in a running container
-
+    Execute a command in a running container
+    
     Examples:
-        dtool exec e3f1d2 id
-        dtool exec e3f1d2 cat /etc/hostname
+        dtool exec nginx "ls -la"
+        dtool exec nginx "cat /etc/hostname"
+        dtool exec backend "ps aux | grep node"
     """
-
     docker = check_docker_daemon()
-    docker.exec_cmd(container_id=container_id, command=" ".join(command))
+    docker.exec_cmd(container_id=container_id, command=command)
 
 @app.command()
 def logs(
@@ -210,6 +222,29 @@ def rm(
     docker = check_docker_daemon()
     docker.remove_container(container_id=container_id, force=force)
     
+    
+@app.command()
+def wizard():
+    """
+    🧙 Launch interactive wizard mode
+    
+    Interactive container management with a beautiful TUI.
+    
+    Examples:
+        dtool wizard
+    """
+    docker = check_docker_daemon()
+    
+    console.print(
+        Panel.fit(
+            "[bold cyan]🧙 Docker Wizard[/bold cyan]\n"
+            "Interactive container management",
+            border_style="cyan",
+        )
+    )
+    
+    wizard = DockerWizard(docker)
+    wizard.run()
 
 if __name__ == "__main__":
     app()
