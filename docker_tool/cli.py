@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import typer
 from typing import Optional
 from rich.console import Console
@@ -121,9 +120,9 @@ def shell(
     🐳 Spawn shell in a running container
 
     Examples:
-        dtool shell e3f1d2          # Match by ID prefix
-        dtool shell backend         # Match by exact name  
-        dtool shell ".*nginx.*"     # Match by regex pattern
+        dtool shell e3f1d2
+        dtool shell backend
+        dtool shell ".*nginx.*"
     """
 
     docker = check_docker_daemon()
