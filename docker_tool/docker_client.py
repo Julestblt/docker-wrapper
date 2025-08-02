@@ -27,7 +27,7 @@ class DockerClient:
                         f"• [bold]dtool ps -a[/bold] to see all containers\n"
                         f"• [bold]dtool ps[/bold] to see running containers",
                         title="🐳 Container Error",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
             else:
@@ -36,7 +36,7 @@ class DockerClient:
                         "[bold red]Resource not found![/bold red]\n\n"
                         "The requested Docker resource was not found.",
                         title="🐳 Docker Error",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
         elif isinstance(e, APIError):
@@ -46,25 +46,23 @@ class DockerClient:
                     f"{str(e)}\n\n"
                     f"[dim]This usually indicates a Docker daemon issue.[/dim]",
                     title="🐳 Docker Error",
-                    border_style="red"
+                    border_style="red",
                 )
             )
         elif isinstance(e, DockerException):
             console.print(
                 Panel(
-                    f"[bold red]Docker Error![/bold red]\n\n"
-                    f"{str(e)}",
+                    f"[bold red]Docker Error![/bold red]\n\n" f"{str(e)}",
                     title="🐳 Docker Error",
-                    border_style="red"
+                    border_style="red",
                 )
             )
         else:
             console.print(
                 Panel(
-                    f"[bold red]Unexpected Error![/bold red]\n\n"
-                    f"{str(e)}",
+                    f"[bold red]Unexpected Error![/bold red]\n\n" f"{str(e)}",
                     title="⚠️ Error",
-                    border_style="red"
+                    border_style="red",
                 )
             )
 
@@ -80,15 +78,25 @@ class DockerClient:
         except DockerException:
             return False
 
-    def list_containers(self, all: bool = True,
-                        filter: str = False, regex: bool = True) -> List[Dict]:
+    def list_containers(
+        self, all: bool = True, filter: str = False, regex: bool = True
+    ) -> List[Dict]:
         try:
             client = docker.from_env()
             if filter:
                 containers = client.containers.list(all=all)
                 if not regex:
-                    return [c for c in containers if c.name == filter or c.id == filter or c.id.startswith(filter)]
-                return [c for c in containers if re.search(filter, c.name, re.IGNORECASE) or re.search(filter, c.id, re.IGNORECASE)]
+                    return [
+                        c
+                        for c in containers
+                        if c.name == filter or c.id == filter or c.id.startswith(filter)
+                    ]
+                return [
+                    c
+                    for c in containers
+                    if re.search(filter, c.name, re.IGNORECASE)
+                    or re.search(filter, c.id, re.IGNORECASE)
+                ]
             else:
                 return client.containers.list(all=all)
 
@@ -101,13 +109,12 @@ class DockerClient:
 
     def print_containers_rich(self, containers: List):
         if not containers:
-            console.print(
-                "[bold yellow]No containers found.[/bold yellow]"
-            )
+            console.print("[bold yellow]No containers found.[/bold yellow]")
             return
 
-        table = Table(title="Docker Containers",
-                      show_header=True, header_style="bold magenta")
+        table = Table(
+            title="Docker Containers", show_header=True, header_style="bold magenta"
+        )
         table.add_column("ID", style="cyan", width=12)
         table.add_column("Name", style="green")
         table.add_column("Image", style="blue")
@@ -117,8 +124,11 @@ class DockerClient:
         for container in containers:
             container_id = container.short_id
             name = container.name
-            image = (container.image.tags[0] if container.image.tags
-                     else container.image.id[:12])
+            image = (
+                container.image.tags[0]
+                if container.image.tags
+                else container.image.id[:12]
+            )
             status = container.status
 
             ports = []
@@ -126,7 +136,7 @@ class DockerClient:
                 for container_port, host_bindings in container.ports.items():
                     if host_bindings:
                         for binding in host_bindings:
-                            host_port = binding['HostPort']
+                            host_port = binding["HostPort"]
                             port_mapping = f"{host_port}:{container_port}"
                             ports.append(port_mapping)
                     else:
@@ -140,11 +150,11 @@ class DockerClient:
                 name,
                 image,
                 f"[{status_color}]{status}[/{status_color}]",
-                ports_str
+                ports_str,
             )
 
         console.print(table)
-        
+
     def find_container(self, container_pattern: str, all: bool = True):
         """
         Smart container finder with exact match and regex fallback
@@ -153,88 +163,94 @@ class DockerClient:
         try:
             client = docker.from_env()
             containers = client.containers.list(all=all)
-            
+
             if not containers:
                 return None, []
-            
+
             for container in containers:
-                if (container.id == container_pattern or 
-                    container.id.startswith(container_pattern) or 
-                    container.name == container_pattern):
+                if (
+                    container.id == container_pattern
+                    or container.id.startswith(container_pattern)
+                    or container.name == container_pattern
+                ):
                     return container, []
-            
+
             import re
+
             matches = []
             pattern = re.compile(container_pattern, re.IGNORECASE)
-            
+
             for container in containers:
-                if (pattern.search(container.name) or 
-                    pattern.search(container.id)):
+                if pattern.search(container.name) or pattern.search(container.id):
                     matches.append(container)
-            
+
             if len(matches) == 1:
                 return matches[0], []
             elif len(matches) > 1:
                 return None, matches
             else:
                 return None, []
-                
+
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e)
             return None, []
         except Exception as e:
             self._handle_docker_error(e)
             return None, []
-    
+
     def interactive_container_selection(self, containers: List, action: str = "manage"):
         """
         Show interactive selection when multiple containers match
         """
         import questionary
-        
+
         if not containers:
             return None
-            
+
         choices = []
         for c in containers:
             status_emoji = "🟢" if c.status == "running" else "🔴"
             image_name = c.image.tags[0] if c.image.tags else c.image.id[:12]
             choices.append(f"{status_emoji} {c.name} ({c.short_id}) - {image_name}")
-        
+
         choices.append("❌ Cancel")
-        
+
         selected = questionary.select(
             f"Multiple containers found. Select one to {action}:",
             choices=choices,
-            style=questionary.Style([
-                ('qmark', 'fg:#673ab7 bold'),
-                ('question', 'bold'),
-                ('answer', 'fg:#f44336 bold'),
-                ('pointer', 'fg:#673ab7 bold'),
-                ('highlighted', 'fg:#673ab7 bold'),
-                ('selected', 'fg:#cc5454'),
-                ('separator', 'fg:#cc5454'),
-                ('instruction', 'fg:#abb2bf'),
-                ('text', 'fg:#61afef'),
-            ])
+            style=questionary.Style(
+                [
+                    ("qmark", "fg:#673ab7 bold"),
+                    ("question", "bold"),
+                    ("answer", "fg:#f44336 bold"),
+                    ("pointer", "fg:#673ab7 bold"),
+                    ("highlighted", "fg:#673ab7 bold"),
+                    ("selected", "fg:#cc5454"),
+                    ("separator", "fg:#cc5454"),
+                    ("instruction", "fg:#abb2bf"),
+                    ("text", "fg:#61afef"),
+                ]
+            ),
         ).ask()
-        
+
         if selected == "❌ Cancel":
             return None
-        
+
         for i, c in enumerate(containers):
             status_emoji = "🟢" if c.status == "running" else "🔴"
             image_name = c.image.tags[0] if c.image.tags else c.image.id[:12]
             container_display = f"{status_emoji} {c.name} ({c.short_id}) - {image_name}"
             if container_display == selected:
                 return c
-        
+
         return None
-        
+
     def spawn_shell(self, container_pattern: str, shell: str = "/bin/sh"):
         try:
-            container, multiple_matches = self.find_container(container_pattern, all=False) 
-            
+            container, multiple_matches = self.find_container(
+                container_pattern, all=False
+            )
+
             if container is None and not multiple_matches:
                 console.print(
                     Panel(
@@ -244,28 +260,30 @@ class DockerClient:
                         f"• [bold]dtool ps[/bold] to see running containers\n"
                         f"• [bold]dtool ps -a[/bold] to see all containers",
                         title="🐳 Container Search",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
                 return
-            
+
             if multiple_matches:
-                container = self.interactive_container_selection(multiple_matches, "spawn shell in")
+                container = self.interactive_container_selection(
+                    multiple_matches, "spawn shell in"
+                )
                 if container is None:
                     console.print("[yellow]Operation cancelled.[/yellow]")
                     return
-            
+
             self._spawn_shell_in_container(container, shell)
-            
+
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e, container_pattern)
         except Exception as e:
             self._handle_docker_error(e, container_pattern)
-    
+
     def _spawn_shell_in_container(self, container, shell: str = "/bin/sh"):
         """Internal method to spawn shell in a specific container object"""
         try:
-            if container.status != 'running':
+            if container.status != "running":
                 console.print(
                     Panel(
                         f"[bold red]Container not running![/bold red]\n\n"
@@ -273,28 +291,28 @@ class DockerClient:
                         f"[dim]Try starting it first:[/dim]\n"
                         f"• [bold]dtool start {container.name}[/bold]",
                         title="🐳 Container Status",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
                 return
-            
-            console.print(f"\n[bold green]Entering {shell} in container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]\n")
-            
-            cmd = [
-                "docker", "exec", "-it", 
-                container.id, 
-                shell
-            ]
-            
+
+            console.print(
+                f"\n[bold green]Entering {shell} in container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]\n"
+            )
+
+            cmd = ["docker", "exec", "-it", container.id, shell]
+
             os.execvp("docker", cmd)
-            
+
         except Exception as e:
             self._handle_docker_error(e)
-        
+
     def exec_cmd(self, container_pattern: str, command: str):
         try:
-            container, multiple_matches = self.find_container(container_pattern, all=False)
-            
+            container, multiple_matches = self.find_container(
+                container_pattern, all=False
+            )
+
             if container is None and not multiple_matches:
                 console.print(
                     Panel(
@@ -304,28 +322,30 @@ class DockerClient:
                         f"• [bold]dtool ps[/bold] to see running containers\n"
                         f"• [bold]dtool ps -a[/bold] to see all containers",
                         title="🐳 Container Search",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
                 return
-            
+
             if multiple_matches:
-                container = self.interactive_container_selection(multiple_matches, "execute command in")
+                container = self.interactive_container_selection(
+                    multiple_matches, "execute command in"
+                )
                 if container is None:
                     console.print("[yellow]Operation cancelled.[/yellow]")
                     return
-            
+
             self._exec_cmd_in_container(container, command)
-            
+
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e, container_pattern)
         except Exception as e:
             self._handle_docker_error(e, container_pattern)
-    
+
     def _exec_cmd_in_container(self, container, command: str):
         """Internal method to execute command in a specific container object"""
         try:
-            if container.status != 'running':
+            if container.status != "running":
                 console.print(
                     Panel(
                         f"[bold yellow]Container not running![/bold yellow]\n\n"
@@ -333,27 +353,29 @@ class DockerClient:
                         f"[dim]Try starting it first:[/dim]\n"
                         f"• [bold]dtool start {container.name}[/bold]",
                         title="🐳 Container Status",
-                        border_style="yellow"
+                        border_style="yellow",
                     )
                 )
                 return
-            
+
             client = docker.from_env()
             exec_instance = client.api.exec_create(
                 container.id, command.split(), tty=True, stdin=True
             )
-            output = client.api.exec_start(exec_instance['Id'], stream=True)
+            output = client.api.exec_start(exec_instance["Id"], stream=True)
             for line in output:
-                print(line.decode('utf-8'), end='')
+                print(line.decode("utf-8"), end="")
                 if self.capture:
-                    self.captured_output.append(line.decode('utf-8'))
+                    self.captured_output.append(line.decode("utf-8"))
         except Exception as e:
             self._handle_docker_error(e)
-        
-    def fetch_logs(self, container_pattern: str, follow:bool = False):
+
+    def fetch_logs(self, container_pattern: str, follow: bool = False):
         try:
-            container, multiple_matches = self.find_container(container_pattern, all=True)
-            
+            container, multiple_matches = self.find_container(
+                container_pattern, all=True
+            )
+
             if container is None and not multiple_matches:
                 console.print(
                     Panel(
@@ -362,74 +384,83 @@ class DockerClient:
                         f"[dim]Try:[/dim]\n"
                         f"• [bold]dtool ps -a[/bold] to see all containers",
                         title="🐳 Container Search",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
                 return
-            
+
             if multiple_matches:
-                container = self.interactive_container_selection(multiple_matches, "view logs from")
+                container = self.interactive_container_selection(
+                    multiple_matches, "view logs from"
+                )
                 if container is None:
                     console.print("[yellow]Operation cancelled.[/yellow]")
                     return
-            
+
             self._fetch_logs_from_container(container, follow)
-            
+
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e, container_pattern)
         except Exception as e:
             self._handle_docker_error(e, container_pattern)
-    
+
     def _fetch_logs_from_container(self, container, follow: bool = False):
         """Internal method to fetch logs from a specific container object"""
         try:
-            if container.status != 'running':
+            if container.status != "running":
                 console.print(
                     Panel(
                         f"[bold yellow]Container not running![/bold yellow]\n\n"
                         f"Container '[cyan]{container.name}[/cyan]' ([dim]{container.short_id}[/dim]) is currently [red]{container.status}[/red].\n\n"
                         f"[dim]Note: You can still view logs from stopped containers.[/dim]",
                         title="🐳 Container Status",
-                        border_style="yellow"
+                        border_style="yellow",
                     )
                 )
-            
+
             if follow:
                 logs = container.logs(stream=True, follow=True)
                 for log in logs:
-                    print(log.decode('utf-8'), end='')
+                    print(log.decode("utf-8"), end="")
             else:
                 logs = container.logs()
-                print(logs.decode('utf-8'), end='')
+                print(logs.decode("utf-8"), end="")
         except Exception as e:
             self._handle_docker_error(e)
-        
+
     def start_container(self, container_id: str):
         try:
             client = docker.from_env()
             container = client.containers.get(container_id)
-            if container.status == 'running':
+            if container.status == "running":
                 console.print(
                     Panel(
                         f"[bold yellow]Container already running![/bold yellow]\n\n"
                         f"Container '[cyan]{container.name}[/cyan]' ([dim]{container.short_id}[/dim]) is already running.",
                         title="🐳 Container Status",
-                        border_style="yellow"
+                        border_style="yellow",
                     )
                 )
                 return
-            
+
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 console=console,
-                transient=True
+                transient=True,
             ) as progress:
-                task = progress.add_task(f"Starting container {container.name}...", total=None)
+                task = progress.add_task(
+                    f"Starting container {container.name}...", total=None
+                )
                 container.start()
-                progress.update(task, description=f"[bold green]✓[/bold green] Started container {container.name}")
+                progress.update(
+                    task,
+                    description=f"[bold green]✓[/bold green] Started container {container.name}",
+                )
 
-            console.print(f"[bold green]Started container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]")
+            console.print(
+                f"[bold green]Started container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]"
+            )
 
             container.reload()
             self.print_containers_rich(containers=[container])
@@ -437,33 +468,40 @@ class DockerClient:
             self._handle_docker_error(e, container_id)
         except Exception as e:
             self._handle_docker_error(e, container_id)
-        
+
     def stop_container(self, container_id: str, force: bool = False):
         try:
             client = docker.from_env()
             container = client.containers.get(container_id)
-            if container.status != 'running':
+            if container.status != "running":
                 console.print(
                     Panel(
                         f"[bold yellow]Container not running![/bold yellow]\n\n"
                         f"Container '[cyan]{container.name}[/cyan]' ([dim]{container.short_id}[/dim]) is currently [red]{container.status}[/red].",
                         title="🐳 Container Status",
-                        border_style="yellow"
+                        border_style="yellow",
                     )
                 )
                 return
-            
+
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 console=console,
-                transient=True
+                transient=True,
             ) as progress:
-                task = progress.add_task(f"Stopping container {container.name}...", total=None)
+                task = progress.add_task(
+                    f"Stopping container {container.name}...", total=None
+                )
                 container.stop(force=force)
-                progress.update(task, description=f"[bold green]✓[/bold green] Stopped container {container.name}")
-            
-            console.print(f"[bold red]Stopped container[/bold red] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]")
+                progress.update(
+                    task,
+                    description=f"[bold green]✓[/bold green] Stopped container {container.name}",
+                )
+
+            console.print(
+                f"[bold red]Stopped container[/bold red] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]"
+            )
 
             container.reload()
             self.print_containers_rich(containers=[container])
@@ -476,31 +514,38 @@ class DockerClient:
         try:
             client = docker.from_env()
             container = client.containers.get(container_id)
-            
+
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 console=console,
-                transient=True
+                transient=True,
             ) as progress:
-                task = progress.add_task(f"Restarting container {container.name}...", total=None)
+                task = progress.add_task(
+                    f"Restarting container {container.name}...", total=None
+                )
                 container.restart(force=force)
-                progress.update(task, description=f"[bold green]✓[/bold green] Restarted container {container.name}")
-            
-            console.print(f"[bold green]Restarted container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]")
-            
+                progress.update(
+                    task,
+                    description=f"[bold green]✓[/bold green] Restarted container {container.name}",
+                )
+
+            console.print(
+                f"[bold green]Restarted container[/bold green] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]"
+            )
+
             container.reload()
             self.print_containers_rich(containers=[container])
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e, container_id)
         except Exception as e:
             self._handle_docker_error(e, container_id)
-        
+
     def remove_container(self, container_id: str, force: bool = False):
         try:
             client = docker.from_env()
             container = client.containers.get(container_id)
-            if container.status == 'running' and not force:
+            if container.status == "running" and not force:
                 console.print(
                     Panel(
                         f"[bold red]Container is running![/bold red]\n\n"
@@ -509,22 +554,29 @@ class DockerClient:
                         f"• [bold]dtool stop {container_id}[/bold] then remove it\n"
                         f"• Use [bold]--force[/bold] flag to force removal",
                         title="🐳 Container Status",
-                        border_style="red"
+                        border_style="red",
                     )
                 )
                 return
-            
+
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 console=console,
-                transient=True
+                transient=True,
             ) as progress:
-                task = progress.add_task(f"Removing container {container.name}...", total=None)
+                task = progress.add_task(
+                    f"Removing container {container.name}...", total=None
+                )
                 container.remove(force=force)
-                progress.update(task, description=f"[bold green]✓[/bold green] Removed container {container.name}")
-            
-            console.print(f"[bold red]Removed container[/bold red] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]")
+                progress.update(
+                    task,
+                    description=f"[bold green]✓[/bold green] Removed container {container.name}",
+                )
+
+            console.print(
+                f"[bold red]Removed container[/bold red] [cyan]{container.name}[/cyan] [dim]({container.short_id})[/dim]"
+            )
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e, container_id)
         except Exception as e:

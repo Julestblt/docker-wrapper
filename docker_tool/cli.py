@@ -36,7 +36,7 @@ def check_docker_daemon():
                 "• Linux: sudo systemctl start docker\n"
                 "• WSL: sudo service docker start",
                 title="⚠️  Docker Error",
-                border_style="red"
+                border_style="red",
             )
         )
         raise typer.Exit(1)
@@ -45,9 +45,7 @@ def check_docker_daemon():
 
 def version_callback(value: bool):
     if value:
-        console.print(
-            f"[bold blue]Docker Tool[/bold blue] version {__version__}"
-        )
+        console.print(f"[bold blue]Docker Tool[/bold blue] version {__version__}")
         raise typer.Exit()
 
 
@@ -76,16 +74,20 @@ def main(
 @app.command()
 def ps(
     container: Optional[str] = typer.Argument(
-        None, help="Container name or ID to filter"),
+        None, help="Container name or ID to filter"
+    ),
     all: bool = typer.Option(False, "--all", "-a", help="Show all containers"),
-    regex: bool = typer.Option(
-        False, "--regex", "-r", help="Use regex match"),
+    regex: bool = typer.Option(False, "--regex", "-r", help="Use regex match"),
     interactive: bool = typer.Option(
-        False, "--interactive", "-i", help="Interactive mode - select and manage containers")
+        False,
+        "--interactive",
+        "-i",
+        help="Interactive mode - select and manage containers",
+    ),
 ):
     """
     📋 List containers
-    
+
     Examples:
         dtool ps
         dtool ps --all
@@ -94,27 +96,29 @@ def ps(
         dtool ps e3f1d2
     """
     docker = check_docker_daemon()
-    
+
     if container:
-        containers = docker.list_containers(
-            all=all, filter=container, regex=regex)
+        containers = docker.list_containers(all=all, filter=container, regex=regex)
     else:
         containers = docker.list_containers(all=all)
-    
+
     if interactive:
         if not containers:
             console.print("[yellow]No containers found![/yellow]")
             return
-            
+
         wizard = DockerWizard(docker)
         wizard.container_selection_wizard(containers)
     else:
         docker.print_containers_rich(containers=containers)
 
+
 @app.command()
 def shell(
-    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
-    shell: str = typer.Argument("/bin/sh", help="Shell to use inside the container")
+    container_pattern: str = typer.Argument(
+        ..., help="Container ID, name, or pattern to match"
+    ),
+    shell: str = typer.Argument("/bin/sh", help="Shell to use inside the container"),
 ):
     """
     🐳 Spawn shell in a running container
@@ -128,14 +132,17 @@ def shell(
     docker = check_docker_daemon()
     docker.spawn_shell(container_pattern=container_pattern, shell=shell)
 
+
 @app.command()
 def exec(
-    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
-    command: str = typer.Argument(..., help="Command to run inside the container")
+    container_pattern: str = typer.Argument(
+        ..., help="Container ID, name, or pattern to match"
+    ),
+    command: str = typer.Argument(..., help="Command to run inside the container"),
 ):
     """
     Execute a command in a running container
-    
+
     Examples:
         dtool exec nginx "ls -la"
         dtool exec backend "cat /etc/hostname"
@@ -144,9 +151,12 @@ def exec(
     docker = check_docker_daemon()
     docker.exec_cmd(container_pattern=container_pattern, command=command)
 
+
 @app.command()
 def logs(
-    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
+    container_pattern: str = typer.Argument(
+        ..., help="Container ID, name, or pattern to match"
+    ),
     follow: bool = typer.Option(
         False, "--follow", "-f", help="Follow logs (tail -f style)"
     ),
@@ -162,8 +172,8 @@ def logs(
 
     docker = check_docker_daemon()
     docker.fetch_logs(container_pattern=container_pattern, follow=follow)
-    
-    
+
+
 @app.command()
 def start(
     container_id: str = typer.Argument(..., help="Container ID or name to start")
@@ -177,11 +187,12 @@ def start(
 
     docker = check_docker_daemon()
     docker.start_container(container_id=container_id)
-    
+
+
 @app.command()
 def stop(
     container_id: str = typer.Argument(..., help="Container ID or name to stop"),
-    force: bool = typer.Option(False, "--force", "-f", help="Force stop the container")
+    force: bool = typer.Option(False, "--force", "-f", help="Force stop the container"),
 ):
     """
     ⏹️ Stop a running container
@@ -192,11 +203,14 @@ def stop(
 
     docker = check_docker_daemon()
     docker.stop_container(container_id=container_id, force=force)
-    
+
+
 @app.command()
 def restart(
     container_id: str = typer.Argument(..., help="Container ID or name to restart"),
-    force: bool = typer.Option(False, "--force", "-f", help="Force restart the container")
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Force restart the container"
+    ),
 ):
     """
     🔄 Restart a running container
@@ -207,11 +221,14 @@ def restart(
 
     docker = check_docker_daemon()
     docker.restart_container(container_id=container_id, force=force)
-    
+
+
 @app.command()
 def rm(
     container_id: str = typer.Argument(..., help="Container ID or name to remove"),
-    force: bool = typer.Option(False, "--force", "-f", help="Force remove the container")
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Force remove the container"
+    ),
 ):
     """
     🗑️ Remove a stopped container
@@ -223,20 +240,20 @@ def rm(
 
     docker = check_docker_daemon()
     docker.remove_container(container_id=container_id, force=force)
-    
-    
+
+
 @app.command()
 def wizard():
     """
     🧙 Launch interactive wizard mode
-    
+
     Interactive container management with a beautiful TUI.
-    
+
     Examples:
         dtool wizard
     """
     docker = check_docker_daemon()
-    
+
     console.print(
         Panel.fit(
             "[bold cyan]🧙 Docker Wizard[/bold cyan]\n"
@@ -244,9 +261,10 @@ def wizard():
             border_style="cyan",
         )
     )
-    
+
     wizard = DockerWizard(docker)
     wizard.run()
+
 
 if __name__ == "__main__":
     app()
