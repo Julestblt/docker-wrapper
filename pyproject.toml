@@ -1,6 +1,6 @@
 [project]
 name = "docker-tool"
-version = "1.0.3"
+version = "1.0.4"
 description = "🛠️ Simple and interactive CLI for Docker container management"
 readme = "README.md"
 license = "MIT"
