@@ -131,7 +131,7 @@ class DockerWizard:
             
             if shell:
                 console.print(f"\n[green]Opening {shell} in {container.name}...[/green]\n")
-                self.docker.spawn_shell(container_id, shell)
+                self.docker._spawn_shell_in_container(container, shell)
                 input("\nPress Enter to continue...")
         
         elif action == 'exec':
@@ -142,7 +142,7 @@ class DockerWizard:
             
             if command:
                 console.print(f"\n[green]Executing: {command}[/green]\n")
-                self.docker.exec_cmd(container_id, command)
+                self.docker._exec_cmd_in_container(container, command)
                 input("\nPress Enter to continue...")
         
         elif action == 'logs':
@@ -154,7 +154,7 @@ class DockerWizard:
             
             console.print("\n[green]Showing logs (Ctrl+C to stop)...[/green]\n")
             try:
-                self.docker.fetch_logs(container_id, follow=follow)
+                self.docker._fetch_logs_from_container(container, follow=follow)
             except KeyboardInterrupt:
                 console.print("\n[yellow]Stopped following logs[/yellow]")
             input("\nPress Enter to continue...")

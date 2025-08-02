@@ -114,22 +114,24 @@ def ps(
 
 @app.command()
 def shell(
-    container_id: str = typer.Argument(..., help="Container ID to exec into"),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
     shell: str = typer.Argument("/bin/sh", help="Shell to use inside the container")
 ):
     """
     🐳 Spawn shell in a running container
 
     Examples:
-        dtool shell e3f1d2
+        dtool shell e3f1d2          # Match by ID prefix
+        dtool shell backend         # Match by exact name  
+        dtool shell ".*nginx.*"     # Match by regex pattern
     """
 
     docker = check_docker_daemon()
-    docker.spawn_shell(container_id=container_id, shell=shell)
+    docker.spawn_shell(container_pattern=container_pattern, shell=shell)
 
 @app.command()
 def exec(
-    container_id: str = typer.Argument(..., help="Container ID to exec into"),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
     command: str = typer.Argument(..., help="Command to run inside the container")
 ):
     """
@@ -137,15 +139,15 @@ def exec(
     
     Examples:
         dtool exec nginx "ls -la"
-        dtool exec nginx "cat /etc/hostname"
-        dtool exec backend "ps aux | grep node"
+        dtool exec backend "cat /etc/hostname"
+        dtool exec web "ps aux"
     """
     docker = check_docker_daemon()
-    docker.exec_cmd(container_id=container_id, command=command)
+    docker.exec_cmd(container_pattern=container_pattern, command=command)
 
 @app.command()
 def logs(
-    container_id: str = typer.Argument(..., help="Container ID or name to fetch logs for"),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
     follow: bool = typer.Option(
         False, "--follow", "-f", help="Follow logs (tail -f style)"
     ),
@@ -155,11 +157,12 @@ def logs(
 
     Examples:
         dtool logs e3f1d2
-        dtool logs e3f1d2 --follow
+        dtool logs backend --follow
+        dtool logs ".*web.*"
     """
 
     docker = check_docker_daemon()
-    docker.fetch_logs(container_id=container_id, follow=follow)
+    docker.fetch_logs(container_pattern=container_pattern, follow=follow)
     
     
 @app.command()
