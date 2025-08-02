@@ -135,16 +135,12 @@ class DockerWizard:
                 ).ask()
 
             if shell:
-                console.print(
-                    f"\n[green]Opening {shell} in {container.name}...[/green]\n"
-                )
+                console.print(f"\n[green]Opening {shell} in {container.name}...[/green]\n")
                 self.docker._spawn_shell_in_container(container, shell)
                 input("\nPress Enter to continue...")
 
         elif action == "exec":
-            command = questionary.text(
-                "Enter command to execute:", style=self.style
-            ).ask()
+            command = questionary.text("Enter command to execute:", style=self.style).ask()
 
             if command:
                 console.print(f"\n[green]Executing: {command}[/green]\n")
@@ -152,9 +148,7 @@ class DockerWizard:
                 input("\nPress Enter to continue...")
 
         elif action == "logs":
-            follow = questionary.confirm(
-                "Follow log output?", default=True, style=self.style
-            ).ask()
+            follow = questionary.confirm("Follow log output?", default=True, style=self.style).ask()
 
             console.print("\n[green]Showing logs (Ctrl+C to stop)...[/green]\n")
             try:

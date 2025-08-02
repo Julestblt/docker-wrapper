@@ -133,9 +133,7 @@ class TestCLI:
         result = runner.invoke(app, ["start", "test-container"])
 
         assert result.exit_code == 0
-        mock_docker_client.start_container.assert_called_once_with(
-            container_id="test-container"
-        )
+        mock_docker_client.start_container.assert_called_once_with(container_id="test-container")
 
     def test_stop_command(self, runner, mock_docker_client):
         """Test the stop command"""

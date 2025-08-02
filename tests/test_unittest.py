@@ -97,9 +97,7 @@ class TestDockerClientUnittest(unittest.TestCase):
 
     @mock.patch("docker_tool.docker_client.console")
     @mock.patch("docker_tool.docker_client.docker.from_env")
-    def test_spawn_shell_container_not_running(
-        self, mock_docker_from_env, mock_console
-    ):
+    def test_spawn_shell_container_not_running(self, mock_docker_from_env, mock_console):
         """Test spawn shell when container is not running"""
         self.mock_container.status = "stopped"
         mock_client = mock.Mock()

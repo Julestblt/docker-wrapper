@@ -73,9 +73,7 @@ def main(
 
 @app.command()
 def ps(
-    container: Optional[str] = typer.Argument(
-        None, help="Container name or ID to filter"
-    ),
+    container: Optional[str] = typer.Argument(None, help="Container name or ID to filter"),
     all: bool = typer.Option(False, "--all", "-a", help="Show all containers"),
     regex: bool = typer.Option(False, "--regex", "-r", help="Use regex match"),
     interactive: bool = typer.Option(
@@ -115,9 +113,7 @@ def ps(
 
 @app.command()
 def shell(
-    container_pattern: str = typer.Argument(
-        ..., help="Container ID, name, or pattern to match"
-    ),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
     shell: str = typer.Argument("/bin/sh", help="Shell to use inside the container"),
 ):
     """
@@ -135,9 +131,7 @@ def shell(
 
 @app.command()
 def exec(
-    container_pattern: str = typer.Argument(
-        ..., help="Container ID, name, or pattern to match"
-    ),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
     command: str = typer.Argument(..., help="Command to run inside the container"),
 ):
     """
@@ -154,12 +148,8 @@ def exec(
 
 @app.command()
 def logs(
-    container_pattern: str = typer.Argument(
-        ..., help="Container ID, name, or pattern to match"
-    ),
-    follow: bool = typer.Option(
-        False, "--follow", "-f", help="Follow logs (tail -f style)"
-    ),
+    container_pattern: str = typer.Argument(..., help="Container ID, name, or pattern to match"),
+    follow: bool = typer.Option(False, "--follow", "-f", help="Follow logs (tail -f style)"),
 ):
     """
     📜 Fetch logs from a container
@@ -175,9 +165,7 @@ def logs(
 
 
 @app.command()
-def start(
-    container_id: str = typer.Argument(..., help="Container ID or name to start")
-):
+def start(container_id: str = typer.Argument(..., help="Container ID or name to start")):
     """
     ▶️ Start a stopped container
 
@@ -208,9 +196,7 @@ def stop(
 @app.command()
 def restart(
     container_id: str = typer.Argument(..., help="Container ID or name to restart"),
-    force: bool = typer.Option(
-        False, "--force", "-f", help="Force restart the container"
-    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Force restart the container"),
 ):
     """
     🔄 Restart a running container
@@ -226,9 +212,7 @@ def restart(
 @app.command()
 def rm(
     container_id: str = typer.Argument(..., help="Container ID or name to remove"),
-    force: bool = typer.Option(
-        False, "--force", "-f", help="Force remove the container"
-    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Force remove the container"),
 ):
     """
     🗑️ Remove a stopped container
@@ -256,8 +240,7 @@ def wizard():
 
     console.print(
         Panel.fit(
-            "[bold cyan]🧙 Docker Wizard[/bold cyan]\n"
-            "Interactive container management",
+            "[bold cyan]🧙 Docker Wizard[/bold cyan]\n" "Interactive container management",
             border_style="cyan",
         )
     )

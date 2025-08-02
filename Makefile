@@ -4,6 +4,7 @@ PYTHON := python3
 PIP := $(PYTHON) -m pip
 PYTEST := $(PYTHON) -m pytest
 UNITTEST := $(PYTHON) -m unittest
+PRECOMMIT := .venv/bin/pre-commit
 
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
@@ -22,7 +23,9 @@ install: ## Install production dependencies
 dev-install: ## Install development dependencies
 	@echo "$(GREEN)🔧 Installing development dependencies$(NC)"
 	$(PIP) install -e .
-	$(PIP) install pytest pytest-cov pytest-mock coverage black flake8 mypy
+	$(PIP) install pytest pytest-cov pytest-mock coverage black flake8 mypy pre-commit
+	@echo "$(GREEN)🪝 Installing pre-commit hooks$(NC)"
+	$(PRECOMMIT) install
 
 test-unit: ## Run unit tests (no dependencies)
 	@echo "$(GREEN)🧪 Unit tests (unittest)$(NC)"
@@ -71,5 +74,13 @@ publish: build ## Publish to PyPI
 	$(PYTHON) -m twine upload dist/*
 
 check: lint type-check test-unit ## Complete check (lint + types + tests)
+
+hooks: ## Run pre-commit hooks on all files
+	@echo "$(GREEN)🪝 Running pre-commit hooks$(NC)"
+	$(PRECOMMIT) run --all-files
+
+hooks-update: ## Update pre-commit hooks
+	@echo "$(GREEN)🔄 Updating pre-commit hooks$(NC)"
+	$(PRECOMMIT) autoupdate
 
 all: clean dev-install check test-coverage ## Complete installation and tests

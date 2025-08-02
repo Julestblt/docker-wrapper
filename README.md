@@ -273,9 +273,38 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ### Code Style
 
-- Follow PEP 8
-- Use type hints
-- Add docstrings to functions
+This project uses automated code quality tools:
+
+- **Pre-commit hooks**: Automatically run on every commit
+- **Black**: Code formatting (line length: 88 characters)
+- **Flake8**: PEP8 compliance and code quality
+- **Pytest**: Automated testing before commits
+
+#### Development Setup
+
+```bash
+# Install with development dependencies and hooks
+make dev-install
+
+# Manual pre-commit hooks setup (if needed)
+pre-commit install
+
+# Run all quality checks
+make check
+
+# Run pre-commit hooks manually
+make hooks
+```
+
+#### Code Standards
+
+- Follow PEP 8 (enforced by flake8)
+- Use type hints where possible
+- Add docstrings to public functions
+- Maintain test coverage above 50%
+- All commits must pass pre-commit hooks
+
+See [HOOKS.md](HOOKS.md) for detailed information about pre-commit hooks.
 
 ## License
 

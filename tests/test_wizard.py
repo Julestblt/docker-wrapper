@@ -84,9 +84,7 @@ class TestDockerWizard:
                 mock_manage.assert_called_once_with(mock_container)
 
     @mock.patch("docker_tool.wizard.questionary")
-    def test_manage_container_back_action(
-        self, mock_questionary, wizard, mock_container
-    ):
+    def test_manage_container_back_action(self, mock_questionary, wizard, mock_container):
         """Test manage container with back action"""
         mock_select = mock.Mock()
         mock_select.ask.return_value = "back"
@@ -110,9 +108,7 @@ class TestDockerWizard:
         mock_shell_select.ask.return_value = "/bin/bash"
 
         with mock.patch("docker_tool.wizard.console"):
-            with mock.patch(
-                "builtins.input"
-            ):  # Mock input for "Press Enter to continue"
+            with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
                 call_count = 0
 
                 def side_effect(*args, **kwargs):
@@ -148,9 +144,7 @@ class TestDockerWizard:
         mock_questionary.text.return_value = mock_text
 
         with mock.patch("docker_tool.wizard.console"):
-            with mock.patch(
-                "builtins.input"
-            ):  # Mock input for "Press Enter to continue"
+            with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
                 wizard.execute_action(mock_container, "exec")
 
                 mock_docker_client._exec_cmd_in_container.assert_called_once_with(
@@ -169,9 +163,7 @@ class TestDockerWizard:
         mock_questionary.confirm.return_value = mock_confirm
 
         with mock.patch("docker_tool.wizard.console"):
-            with mock.patch(
-                "builtins.input"
-            ):  # Mock input for "Press Enter to continue"
+            with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
                 wizard.execute_action(mock_container, "logs")
 
                 mock_docker_client._fetch_logs_from_container.assert_called_once_with(
@@ -185,9 +177,7 @@ class TestDockerWizard:
         with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
             wizard.execute_action(mock_container, "start")
 
-            mock_docker_client.start_container.assert_called_once_with(
-                mock_container.id
-            )
+            mock_docker_client.start_container.assert_called_once_with(mock_container.id)
 
     def test_execute_action_stop(self, wizard, mock_container, mock_docker_client):
         """Test execute action with stop command"""
@@ -198,14 +188,10 @@ class TestDockerWizard:
             mock_confirm.ask.return_value = True
             mock_questionary.confirm.return_value = mock_confirm
 
-            with mock.patch(
-                "builtins.input"
-            ):  # Mock input for "Press Enter to continue"
+            with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
                 wizard.execute_action(mock_container, "stop")
 
-                mock_docker_client.stop_container.assert_called_once_with(
-                    mock_container.id
-                )
+                mock_docker_client.stop_container.assert_called_once_with(mock_container.id)
 
     def test_execute_action_restart(self, wizard, mock_container, mock_docker_client):
         """Test execute action with restart command"""
@@ -214,6 +200,4 @@ class TestDockerWizard:
         with mock.patch("builtins.input"):  # Mock input for "Press Enter to continue"
             wizard.execute_action(mock_container, "restart")
 
-            mock_docker_client.restart_container.assert_called_once_with(
-                mock_container.id
-            )
+            mock_docker_client.restart_container.assert_called_once_with(mock_container.id)

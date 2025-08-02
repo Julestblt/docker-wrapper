@@ -51,9 +51,7 @@ class TestDockerClient:
 
         assert result is False
 
-    def test_find_container_exact_match_by_id(
-        self, client, mock_docker_from_env, mock_container
-    ):
+    def test_find_container_exact_match_by_id(self, client, mock_docker_from_env, mock_container):
         """Test finding container by exact ID match"""
         mock_client = mock.Mock()
         mock_docker_from_env.return_value = mock_client
@@ -64,9 +62,7 @@ class TestDockerClient:
         assert container == mock_container
         assert matches == []
 
-    def test_find_container_exact_match_by_name(
-        self, client, mock_docker_from_env, mock_container
-    ):
+    def test_find_container_exact_match_by_name(self, client, mock_docker_from_env, mock_container):
         """Test finding container by exact name match"""
         mock_client = mock.Mock()
         mock_docker_from_env.return_value = mock_client
@@ -77,9 +73,7 @@ class TestDockerClient:
         assert container == mock_container
         assert matches == []
 
-    def test_find_container_regex_match_single(
-        self, client, mock_docker_from_env, mock_container
-    ):
+    def test_find_container_regex_match_single(self, client, mock_docker_from_env, mock_container):
         """Test finding container by regex pattern with single match"""
         mock_client = mock.Mock()
         mock_docker_from_env.return_value = mock_client
@@ -122,9 +116,7 @@ class TestDockerClient:
         assert container is None
         assert matches == []
 
-    def test_spawn_shell_container_not_running(
-        self, client, mock_docker_from_env, mock_container
-    ):
+    def test_spawn_shell_container_not_running(self, client, mock_docker_from_env, mock_container):
         """Test spawn shell when container is not running"""
         mock_container.status = "stopped"
         mock_client = mock.Mock()
@@ -136,9 +128,7 @@ class TestDockerClient:
             mock_console.print.assert_called()
 
     @mock.patch("docker_tool.docker_client.os.execvp")
-    def test_spawn_shell_success(
-        self, mock_execvp, client, mock_docker_from_env, mock_container
-    ):
+    def test_spawn_shell_success(self, mock_execvp, client, mock_docker_from_env, mock_container):
         """Test successful spawn shell"""
         mock_client = mock.Mock()
         mock_docker_from_env.return_value = mock_client
@@ -151,9 +141,7 @@ class TestDockerClient:
             "docker", ["docker", "exec", "-it", "test123456789", "/bin/bash"]
         )
 
-    def test_exec_cmd_container_not_running(
-        self, client, mock_docker_from_env, mock_container
-    ):
+    def test_exec_cmd_container_not_running(self, client, mock_docker_from_env, mock_container):
         """Test exec command when container is not running"""
         mock_container.status = "stopped"
         mock_client = mock.Mock()

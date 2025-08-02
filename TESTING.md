@@ -82,7 +82,7 @@ xdg-open htmlcov/index.html  # Linux
 
 ### Current Coverage
 - `docker_client.py`: ~95% coverage
-- `cli.py`: ~90% coverage  
+- `cli.py`: ~90% coverage
 - `wizard.py`: ~85% coverage
 - Overall: ~90% coverage
 

@@ -1,6 +1,6 @@
 import re
 import docker
-from typing import List, Dict
+from typing import List, Union, Optional, Any
 from docker.errors import DockerException, NotFound, APIError
 from rich.console import Console
 from rich.table import Table
@@ -14,8 +14,9 @@ console = Console()
 class DockerClient:
     def __init__(self, capture: bool = False):
         self.capture = capture
+        self.captured_output: List[str] = []
 
-    def _handle_docker_error(self, e: Exception, container_id: str = None):
+    def _handle_docker_error(self, e: Exception, container_id: Optional[str] = None):
         """Handle Docker errors and display user-friendly messages"""
         if isinstance(e, NotFound):
             if container_id:
@@ -79,11 +80,11 @@ class DockerClient:
             return False
 
     def list_containers(
-        self, all: bool = True, filter: str = False, regex: bool = True
-    ) -> List[Dict]:
+        self, all: bool = True, filter: Union[str, bool] = False, regex: bool = True
+    ) -> List[Any]:
         try:
             client = docker.from_env()
-            if filter:
+            if filter and isinstance(filter, str):
                 containers = client.containers.list(all=all)
                 if not regex:
                     return [
@@ -98,7 +99,8 @@ class DockerClient:
                     or re.search(filter, c.id, re.IGNORECASE)
                 ]
             else:
-                return client.containers.list(all=all)
+                containers = client.containers.list(all=all)
+                return list(containers)
 
         except (NotFound, APIError, DockerException) as e:
             self._handle_docker_error(e)
@@ -112,9 +114,7 @@ class DockerClient:
             console.print("[bold yellow]No containers found.[/bold yellow]")
             return
 
-        table = Table(
-            title="Docker Containers", show_header=True, header_style="bold magenta"
-        )
+        table = Table(title="Docker Containers", show_header=True, header_style="bold magenta")
         table.add_column("ID", style="cyan", width=12)
         table.add_column("Name", style="green")
         table.add_column("Image", style="blue")
@@ -124,11 +124,7 @@ class DockerClient:
         for container in containers:
             container_id = container.short_id
             name = container.name
-            image = (
-                container.image.tags[0]
-                if container.image.tags
-                else container.image.id[:12]
-            )
+            image = container.image.tags[0] if container.image.tags else container.image.id[:12]
             status = container.status
 
             ports = []
@@ -247,9 +243,7 @@ class DockerClient:
 
     def spawn_shell(self, container_pattern: str, shell: str = "/bin/sh"):
         try:
-            container, multiple_matches = self.find_container(
-                container_pattern, all=False
-            )
+            container, multiple_matches = self.find_container(container_pattern, all=False)
 
             if container is None and not multiple_matches:
                 console.print(
@@ -266,9 +260,7 @@ class DockerClient:
                 return
 
             if multiple_matches:
-                container = self.interactive_container_selection(
-                    multiple_matches, "spawn shell in"
-                )
+                container = self.interactive_container_selection(multiple_matches, "spawn shell in")
                 if container is None:
                     console.print("[yellow]Operation cancelled.[/yellow]")
                     return
@@ -309,9 +301,7 @@ class DockerClient:
 
     def exec_cmd(self, container_pattern: str, command: str):
         try:
-            container, multiple_matches = self.find_container(
-                container_pattern, all=False
-            )
+            container, multiple_matches = self.find_container(container_pattern, all=False)
 
             if container is None and not multiple_matches:
                 console.print(
@@ -372,9 +362,7 @@ class DockerClient:
 
     def fetch_logs(self, container_pattern: str, follow: bool = False):
         try:
-            container, multiple_matches = self.find_container(
-                container_pattern, all=True
-            )
+            container, multiple_matches = self.find_container(container_pattern, all=True)
 
             if container is None and not multiple_matches:
                 console.print(
@@ -390,9 +378,7 @@ class DockerClient:
                 return
 
             if multiple_matches:
-                container = self.interactive_container_selection(
-                    multiple_matches, "view logs from"
-                )
+                container = self.interactive_container_selection(multiple_matches, "view logs from")
                 if container is None:
                     console.print("[yellow]Operation cancelled.[/yellow]")
                     return
@@ -449,9 +435,7 @@ class DockerClient:
                 console=console,
                 transient=True,
             ) as progress:
-                task = progress.add_task(
-                    f"Starting container {container.name}...", total=None
-                )
+                task = progress.add_task(f"Starting container {container.name}...", total=None)
                 container.start()
                 progress.update(
                     task,
@@ -490,9 +474,7 @@ class DockerClient:
                 console=console,
                 transient=True,
             ) as progress:
-                task = progress.add_task(
-                    f"Stopping container {container.name}...", total=None
-                )
+                task = progress.add_task(f"Stopping container {container.name}...", total=None)
                 container.stop(force=force)
                 progress.update(
                     task,
@@ -521,9 +503,7 @@ class DockerClient:
                 console=console,
                 transient=True,
             ) as progress:
-                task = progress.add_task(
-                    f"Restarting container {container.name}...", total=None
-                )
+                task = progress.add_task(f"Restarting container {container.name}...", total=None)
                 container.restart(force=force)
                 progress.update(
                     task,
@@ -565,9 +545,7 @@ class DockerClient:
                 console=console,
                 transient=True,
             ) as progress:
-                task = progress.add_task(
-                    f"Removing container {container.name}...", total=None
-                )
+                task = progress.add_task(f"Removing container {container.name}...", total=None)
                 container.remove(force=force)
                 progress.update(
                     task,
